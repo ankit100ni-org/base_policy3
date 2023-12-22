@@ -24,8 +24,8 @@ jobs:
 
       - name: Check if Cookbook poilicy part of Base policy
         run: |
-          echo "$parameter1"
-          echo "$parameter2" 
+          echo "para1 $parameter1"
+          echo "para2 $parameter2" 
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
           echo $policy_file_name
 
