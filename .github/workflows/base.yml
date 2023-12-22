@@ -1,8 +1,8 @@
-name: base_policy3
+name: base-policy3
 
 on:
   repository_dispatch:
-    types: [base_policy3]
+    types: [base-policy3]
   pull_request:
     types: [opened, reopened, edited, synchronize]
     branches:
