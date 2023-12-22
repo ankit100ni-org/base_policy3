@@ -76,7 +76,7 @@ jobs:
             # converge
             rm $tmp_policy_file
           done
-        if: env.skip_step == 'false'
+        if: env.skip_step == 'false' || env.parameter1 != '""'
 
 
 
