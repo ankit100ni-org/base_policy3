@@ -29,8 +29,6 @@ jobs:
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
           echo $policy_file_name
 
-          # parameter1="ilm_ca"
-
           echo "Parameter1: $parameter1"
           IF_BASE=`echo "$(cat $policy_file_name | grep "^include_policy" | grep "'$parameter1'")"`
           echo "IF_BASE $IF_BASE"
