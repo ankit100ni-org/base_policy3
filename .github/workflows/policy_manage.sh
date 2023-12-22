@@ -36,6 +36,6 @@ echo "$json_data" | jq -r 'to_entries[] | "\(.key) \(.value.client_name) \(.valu
   chef show-policy
 done
 
-# Print the array of failed Organizations
+# Print the array of failed Organizations.
 
 
