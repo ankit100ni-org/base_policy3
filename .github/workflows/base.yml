@@ -51,6 +51,7 @@ jobs:
           echo $json_data
 
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
+          echo $policy_file_name
           # static_org=$(cat $policy_file_name | grep "^default_source :chef_server" | cut -d '/' -f 5)
           static_org="CHEF_ORG"
           echo "Static org: $static_org"
