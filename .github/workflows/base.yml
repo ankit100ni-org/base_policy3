@@ -24,10 +24,10 @@ jobs:
 
       - name: Check if Cookbook poilicy part of Base policy
         run: |
+          echo "para1 $parameter1"
+          echo "para2 $parameter2" 
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
           echo $policy_file_name
-
-          parameter1="ilm_ca"
 
           echo "Parameter1: $parameter1"
           IF_BASE=`echo "$(cat $policy_file_name | grep "^include_policy" | grep "'$parameter1'")"`
@@ -37,6 +37,7 @@ jobs:
           else
             echo "skip_step=false" >> $GITHUB_ENV
           fi
+        if: env.parameter1 ==  '""'
 
       - name: Installing Workstation
         run: |
@@ -45,12 +46,12 @@ jobs:
 
       - name: Base Policy Update
         run: |
-          echo "$parameter1"
           echo "$parameter2"
           json_data=$ORG_DATA
           echo $json_data
-
+          ls -lhart
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
+          echo $policy_file_name
           # static_org=$(cat $policy_file_name | grep "^default_source :chef_server" | cut -d '/' -f 5)
           static_org="CHEF_ORG"
           echo "Static org: $static_org"
@@ -74,7 +75,7 @@ jobs:
             # converge
             rm $tmp_policy_file
           done
-        if: env.skip_step == 'false'
+        if: env.skip_step == 'false' || env.parameter1 != '""'
 
 
 
