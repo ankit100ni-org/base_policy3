@@ -24,6 +24,8 @@ jobs:
 
       - name: Check if Cookbook poilicy part of Base policy
         run: |
+          echo "$parameter1"
+          echo "$parameter2" 
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
           echo $policy_file_name
 
@@ -37,7 +39,7 @@ jobs:
           else
             echo "skip_step=false" >> $GITHUB_ENV
           fi
-        if: env.parameter1 == ''
+        if: env.parameter1 ==  '""'
 
       - name: Installing Workstation
         run: |
@@ -46,7 +48,6 @@ jobs:
 
       - name: Base Policy Update
         run: |
-          echo "$parameter1"
           echo "$parameter2"
           json_data=$ORG_DATA
           echo $json_data
