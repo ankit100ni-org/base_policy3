@@ -49,7 +49,7 @@ jobs:
           echo "$parameter2"
           json_data=$ORG_DATA
           echo $json_data
-
+          ls -lhart
           policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
           echo $policy_file_name
           # static_org=$(cat $policy_file_name | grep "^default_source :chef_server" | cut -d '/' -f 5)
