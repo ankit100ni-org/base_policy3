@@ -1,0 +1,81 @@
+name: base
+
+on:
+  repository_dispatch:
+    types: [base]
+  pull_request:
+    types: [opened, reopened, edited, synchronize]
+    branches:
+      - main
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      parameter1: ${{ github.event.client_payload.parameter1 }}
+      parameter2: ${{ github.event.client_payload.parameter2 }}
+      ORG_DATA: ${{ vars.ORG_DETAILS }}
+      CHEFADMIN: ${{secrets.CHEFADMIN}}
+      TESTUSER: ${{secrets.TESTUSER}}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Check if Cookbook poilicy part of Base policy
+        run: |
+          policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
+          echo $policy_file_name
+
+          parameter1="ilm_ca"
+
+          echo "Parameter1: $parameter1"
+          IF_BASE=`echo "$(cat $policy_file_name | grep "^include_policy" | grep "'$parameter1'")"`
+          echo "IF_BASE $IF_BASE"
+          if [ -z "$IF_BASE" ]; then
+            echo "skip_step=true" >> $GITHUB_ENV
+          else
+            echo "skip_step=false" >> $GITHUB_ENV
+          fi
+
+      - name: Installing Workstation
+        run: |
+          wget https://packages.chef.io/files/stable/chef-workstation/23.12.1055/ubuntu/22.04/chef-workstation_23.12.1055-1_amd64.deb; sudo dpkg -i chef-workstation_23.12.1055-1_amd64.deb
+          # sudo chmod 777 .github/workflows/accept_cert.sh
+          # sudo ./.github/workflows/accept_cert.sh 
+
+      - name: Base Policy Update
+        run: |
+          echo "$parameter1"
+          echo "$parameter2"
+          json_data=$ORG_DATA
+          echo $json_data
+
+          policy_file_name=$(echo "$(basename "$(find . -type f -exec grep -l "^include_policy" {} + )")")
+          # static_org=$(cat $policy_file_name | grep "^default_source :chef_server" | cut -d '/' -f 5)
+          static_org="CHEF_ORG"
+          echo "Static org: $static_org"
+          echo "$json_data" | jq -r 'to_entries[] | "\(.key) \(.value.client_name) \(.value.client_key_name) \(.value.org_name)"' | while read -r org client_name client_key_name org_name; do
+            echo "Org: $org_name"
+            cp $policy_file_name "${org_name}_${policy_file_name}"
+            tmp_policy_file="${org_name}_${policy_file_name}"
+            echo "Updating the Base Policyfiles org name in Chef server url"
+            awk '/^default_source :chef_server/ {sub("'"${static_org}"'", "'"${org_name}"'")} 1' "${tmp_policy_file}" > "${tmp_policy_file}.tmp" && mv "${tmp_policy_file}.tmp" "${tmp_policy_file}"
+            awk '/^include_policy/ {sub(/POLICY_GROUP/, "'"${parameter2}"'")} 1' "${tmp_policy_file}" > "${tmp_policy_file}.tmp" && mv "${tmp_policy_file}.tmp" "${tmp_policy_file}"
+            awk '/^include_policy/ {sub("'"${static_org}"'", "'"${org_name}"'")} 1' "${tmp_policy_file}" > "${tmp_policy_file}.tmp" && mv "${tmp_policy_file}.tmp" "${tmp_policy_file}"
+            echo "=========================="
+            cat ${tmp_policy_file}
+            echo "=========================="
+            sudo chmod 777 .github/workflows/policy_manage.sh
+            sudo ./.github/workflows/policy_manage.sh "$ORG_DATA" "$CHEFADMIN" "$TESTUSER"
+            echo "let's run chef commands"
+            # Terraform creation
+            # Connect to Chef server using knife ssl fetch
+            # Node bootstrap 
+            # converge
+            rm $tmp_policy_file
+          done
+        if: env.skip_step == 'false'
+
+
+
